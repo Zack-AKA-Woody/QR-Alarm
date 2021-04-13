@@ -22,6 +22,7 @@ from kivy.core.window import Window
 from kivy.uix.widget import Widget
 from kivy.base import runTouchApp
 
+#MainApp KVLANG
 alarm = """
 <Home@Screen>:
     BoxLayout:
@@ -89,6 +90,7 @@ BoxLayout:
             name: 'edit2_page'  
     """
 
+#QR_App KVLANG
 QR = """
 #:import ZBarCam kivy_garden.zbarcam.ZBarCam
 #:import ZBarSymbol pyzbar.pyzbar.ZBarSymbol
@@ -123,38 +125,6 @@ class MyClock(Label):
         self.current_time = strftime("%I:%M:%S %p")
         app = App.get_running_app()
         t1 = app.root.ids.sm.get_screen('edit1_page').alarm(self.current_time)
-        
-#CREATE NEW WINDOW
-class MyKeyboardListener(Widget):
-
-    def __init__(self, **kwargs):
-        super(MyKeyboardListener, self).__init__(**kwargs)
-        self._keyboard = Window.request_keyboard(
-            self._keyboard_closed, self, 'text')
-        if self._keyboard.widget:
-            # If it exists, this widget is a VKeyboard object which you can use
-            # to change the keyboard layout.
-            pass
-        self._keyboard.bind(on_key_down=self._on_keyboard_down)
-
-    def _keyboard_closed(self):
-        print('My keyboard have been closed!')
-        self._keyboard.unbind(on_key_down=self._on_keyboard_down)
-        self._keyboard = None
-
-    def _on_keyboard_down(self, keyboard, keycode, text, modifiers):
-        print('The key', keycode, 'have been pressed')
-        print(' - text is %r' % text)
-        print(' - modifiers are %r' % modifiers)
-
-        # Keycode is composed of an integer + a string
-        # If we hit escape, release the keyboard
-        if keycode[1] == 'escape':
-            keyboard.release()
-
-        # Return True to accept the key. Otherwise, it will be used by
-        # the system.
-        return True
 
 #KILL ALARM WITH QR CODE
 class Reader(Screen): 
@@ -168,28 +138,30 @@ class Reader(Screen):
              self.close()
 
 #ALARM 
-class AlarmEdit(Screen):  # Moved to the screen
+class AlarmEdit(Screen):  
     alarm_time = StringProperty()
-    alarm_am_state = StringProperty('down')  # set default values
+    alarm_am_state = StringProperty('down') 
     alarm_pm_state = StringProperty('normal')
     def alarm(self, current_time):
             am_pm = {'down': 'AM', 'normal': 'PM'}[self.alarm_am_state]
             a_time = f'{self.alarm_time}:00 {am_pm}'
             if a_time[1] == ':':  # if the : is the second char,a leading zero is missing, insert it.
                 a_time = '0' + a_time
-            print(f'a: {a_time} ct: {current_time}')  # test to watch the time...
+            print(f'a: {a_time} ct: {current_time}')  # test to watch the time
             if a_time == current_time:
                 popup = Popup(title='Alarm 1', content=Label(text=self.alarm_time), size_hint=(None, None), size=(400, 400))
                 b = multiprocessing.Process(target=open_child)
                 start = b.start()
                 popup.on_open:(start)
-                popup.open()      
-                        
+                popup.open()
+                      
+    #SET ALARM                  
     def set_alarm(self):
         self.alarm_time = self.ids.alarmtime.text
         with open("alarm1_details.txt", "w") as f:
             f.write(f"{self.ids.alarmtime.text},{self.alarm_am_state},{self.alarm_pm_state}")
-            
+
+#GET ALARM TIME          
 def __init__(self, **kwargs):
         super().__init__(**kwargs)
         if os.path.isfile("alarm1_details.txt"):
@@ -199,16 +171,7 @@ def __init__(self, **kwargs):
         self.alarm_am_state = d[1]
         self.alarm_pm_state = d[2]
 
-def set_alarm(self):
-        self.alarm_time = self.ids.alarmtime.text
-        formatted_alarm = self.alarm_time.split(":")
-        self.passed_alarm = formatted_alarm.strftime("%I %M %S")
-        alarm_1 = self.alarm_time
-        self.alarm(alarm_1)
-        with open("alarm1_details.txt", "w") as f:
-            f.write(f"{self.ids.alarmtime.text},{self.alarm_am_state},{self.alarm_pm_state}")
-            print(f'Alarm time set: {self.alarm_time}')
-
+#AM/PM BUTTONS
 class MyButton(ToggleButtonBehavior, Label, Image):
     def __init__(self, **kwargs):
         super(MyButton, self).__init__(**kwargs)
@@ -237,7 +200,6 @@ class MainApp(App):
 class QR_App(App):
         def build(self):
             return Builder.load_string(QR)
-
 
 if __name__ == "__main__":
     a = multiprocessing.Process(target=open_parent)
